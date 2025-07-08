@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Webcam Photo Capture</title>
+  <style>
+    video, canvas {
+      display: block;
+      margin: 10px auto;
+    }
+    button {
+      display: block;
+      margin: 10px auto;
+      padding: 10px 20px;
+      font-size: 16px;
+    }
+  </style>
+</head>
+<body>
+
+<video id="video" width="640" height="480" autoplay></video>
+<canvas id="canvas" width="640" height="480" style="display:none;"></canvas>
+<button id="capture">📸 Click to Capture Photo</button>
+
+<script>
+  const video = document.getElementById('video');
+  const canvas = document.getElementById('canvas');
+  const captureBtn = document.getElementById('capture');
+
+  // Ask for webcam access
+  navigator.mediaDevices.getUserMedia({ video: true })
+    .then(stream => {
+      video.srcObject = stream;
+    })
+    .catch(err => {
+      console.error("Camera access denied or not available:", err);
+      alert("Please allow camera access to use this feature.");
+    });
+
+  // Capture photo and download
+  captureBtn.addEventListener('click', () => {
+    const context = canvas.getContext('2d');
+    context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+    // Convert canvas image to data URL
+    const dataUrl = canvas.toDataURL('image/png');
+
+    // Create a download link
+    const link = document.createElement('a');
+    link.href = dataUrl;
+    link.download = 'captured_photo.png';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  });
+</script>
+
+</body>
+</html>

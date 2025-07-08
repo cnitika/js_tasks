@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Click Tracker</title>
+</head>
+<body onload="startTimer()" onunload="sendExitData()">
+    <h2>🛍 Products</h2>
+    <div>
+        <a href="#" onclick="trackClick('Product A')">Product A</a><br>
+        <a href="#" onclick="trackClick('Product B')">Product B</a><br>
+        <a href="#" onclick="trackClick('Product C')">Product C</a><br>
+    </div>
+    <h3>📌 Recommendations:</h3>
+    <ul id="recommendations"></ul>
+
+    <script>
+        let startTime;
+        let username = prompt("Enter your username:");
+
+        function startTimer() {
+            startTime = new Date().getTime();
+        }
+
+        function getWatchTime() {
+            let endTime = new Date().getTime();
+            return Math.floor((endTime - startTime) / 1000);
+        }
+
+        async function trackClick(product) {
+            const watchTime = getWatchTime();
+            const res = await fetch('/click', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ product: product, user: username, watch_time: watchTime })
+            });
+            const data = await res.json();
+            document.getElementById('recommendations').innerHTML =
+                data.recommendations.map(p => `<li>${p}</li>`).join('');
+        }
+
+        async function sendExitData() {
+            const watchTime = getWatchTime();
+            await fetch('/exit', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user: username, watch_time: watchTime })
+            });
+        }
+    </script>
+</body>
+</html>

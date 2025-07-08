@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Smart Assistant</title>
+  <style>
+    body { font-family: Arial; text-align: center; background: #f9f9f9; padding: 20px; }
+    video, canvas { max-width: 90%; margin: 10px auto; display: block; }
+    button { margin: 5px; padding: 10px 20px; font-size: 16px; }
+    iframe { width: 100%; height: 300px; border: none; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <h2>🤖 Smart Assistant Toolkit</h2>
+
+  <!-- Webcam & Canvas -->
+  <video id="video" autoplay playsinline></video>
+  <canvas id="canvas" style="display:none;"></canvas>
+
+  <button onclick="capturePhoto()">📸 Click Photo & Save</button>
+  <button onclick="startRecording()">🎥 Start Recording</button>
+  <button onclick="stopRecording()">⏹️ Stop & Download Video</button>
+  <a id="downloadLink" style="display:none;" download="recorded.webm">⬇️ Download Video</a>
+
+  <!-- Communication -->
+  <h3>📨 Communication</h3>
+  <a href="https://wa.me/919999999999" target="_blank"><button>📱 WhatsApp</button></a>
+  <a href="sms:+919999999999" target="_blank"><button>📩 SMS</button></a>
+
+  <!-- Location -->
+  <h3>📍 Location & Maps</h3>
+  <button onclick="getLocation()">🌍 Get My Location</button>
+  <p id="location"></p>
+  <input id="destination" placeholder="Enter destination">
+  <button onclick="getRoute()">🧭 Get Route</button>
+  <iframe id="mapFrame" src=""></iframe>
+
+  <!-- Grocery Store -->
+  <h3>🛒 Nearby Grocery Stores</h3>
+  <iframe src="https://www.google.com/maps/embed/v1/search?q=grocery+store+near+me&key=YOUR_GOOGLE_MAPS_API_KEY"></iframe>
+
+  <!-- Social Media -->
+  <h3>📬 Email & Social Media</h3>
+  <button onclick="alert('Fetch Gmail needs Google API setup')">📥 Get Last Gmail</button>
+  <button onclick="alert('Post to Instagram needs OAuth setup')">📸 Post to Instagram</button>
+
+  <script>
+    const video = document.getElementById('video');
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+    let mediaRecorder, chunks = [];
+
+    // Start webcam
+    navigator.mediaDevices.getUserMedia({ video: true, audio: true })
+      .then(stream => video.srcObject = stream);
+
+    // Capture photo
+    function capturePhoto() {
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      ctx.drawImage(video, 0, 0);
+      const img = canvas.toDataURL('image/png');
+      const a = document.createElement('a');
+      a.href = img;
+      a.download = "photo.png";
+      a.click();
+    }
+
+    // Record video
+    function startRecording() {
+      chunks = [];
+      mediaRecorder = new MediaRecorder(video.srcObject);
+      mediaRecorder.ondataavailable = e => chunks.push(e.data);
+      mediaRecorder.onstop = () => {
+        const blob = new Blob(chunks, { type: 'video/webm' });
+        const url = URL.createObjectURL(blob);
+        const link = document.getElementById("downloadLink");
+        link.href = url;
+        link.style.display = 'inline';
+      };
+      mediaRecorder.start();
+    }
+
+    function stopRecording() {
+      if (mediaRecorder) mediaRecorder.stop();
+    }
+
+    // Location and Maps
+    function getLocation() {
+      navigator.geolocation.getCurrentPosition(pos => {
+        const lat = pos.coords.latitude;
+        const lon = pos.coords.longitude;
+        document.getElementById("location").innerText = `Lat: ${lat}, Lng: ${lon}`;
+        document.getElementById("mapFrame").src =
+          `https://www.google.com/maps?q=${lat},${lon}&z=15&output=embed`;
+      });
+    }
+
+    function getRoute() {
+      const dest = document.getElementById("destination").value;
+      const url = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(dest)}`;
+      window.open(url, "_blank");
+    }
+  </script>
+
+</body>
+</html>

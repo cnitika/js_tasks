@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Smart Click Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body onload="startTimer()" onunload="sendExitData()">
+<div class="container mt-5">
+    <h1 class="text-center mb-4">🛒 Smart Product Tracker</h1>
+    <div class="row text-center">
+        <div class="col">
+            <button class="btn btn-primary w-100" onclick="trackClick('Product A')">Product A</button>
+        </div>
+        <div class="col">
+            <button class="btn btn-success w-100" onclick="trackClick('Product B')">Product B</button>
+        </div>
+        <div class="col">
+            <button class="btn btn-warning w-100" onclick="trackClick('Product C')">Product C</button>
+        </div>
+    </div>
+    <div class="mt-4">
+        <h4>📌 Recommendations:</h4>
+        <ul id="recommendations" class="list-group"></ul>
+    </div>
+</div>
+
+<script>
+    let startTime;
+    let username = localStorage.getItem("username") || prompt("Enter your username:");
+    localStorage.setItem("username", username);
+
+    function startTimer() {
+        startTime = new Date().getTime();
+    }
+
+    function getWatchTime() {
+        let endTime = new Date().getTime();
+        return Math.floor((endTime - startTime) / 1000);
+    }
+
+    async function trackClick(product) {
+        const watchTime = getWatchTime();
+        const res = await fetch('/click', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ product: product, user: username, watch_time: watchTime })
+        });
+        const data = await res.json();
+        document.getElementById('recommendations').innerHTML =
+            data.recommendations.map(p => `<li class="list-group-item">${p}</li>`).join('');
+    }
+
+    async function sendExitData() {
+        const watchTime = getWatchTime();
+        await fetch('/exit', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user: username, watch_time: watchTime })
+        });
+    }
+</script>
+</body>
+</html>

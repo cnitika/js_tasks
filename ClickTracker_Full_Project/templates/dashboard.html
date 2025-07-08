@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Dashboard</title>
+    <script src="/static/chart.min.js"></script>
+</head>
+<body>
+    <h2>📊 Dashboard</h2>
+    <p><a href="/export">⬇ Export Excel</a> | <a href="/logout">Logout</a></p>
+
+    <form method="get">
+        Show data from:
+        <select name="days" onchange="this.form.submit()">
+            <option value="0">All Time</option>
+            <option value="1">Today</option>
+            <option value="7">Last 7 Days</option>
+        </select>
+    </form>
+
+    <h3>👤 Top Users</h3>
+    <ul>
+        {% for user, count in top_users %}
+            <li>{{ user }} — {{ count }} clicks</li>
+        {% endfor %}
+    </ul>
+
+    <h3>🛍 Top Products</h3>
+    <ul>
+        {% for product, count in top_products %}
+            <li>{{ product }} — {{ count }} clicks</li>
+        {% endfor %}
+    </ul>
+
+    <h3>⏱ Watch Time</h3>
+    <ul>
+        {% for user, time in top_watch_time %}
+            <li>{{ user }} — {{ time }} seconds</li>
+        {% endfor %}
+    </ul>
+
+    <canvas id="barChart" width="400" height="200"></canvas>
+    <script>
+        const ctx = document.getElementById('barChart').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: {{ top_products|map(attribute=0)|list }},
+                datasets: [{
+                    label: 'Clicks',
+                    data: {{ top_products|map(attribute=1)|list }},
+                    backgroundColor: 'orange'
+                }]
+            }
+        });
+    </script>
+</body>
+</html>
